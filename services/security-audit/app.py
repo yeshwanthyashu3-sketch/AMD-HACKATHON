@@ -113,39 +113,42 @@ async def startup_event():
 # =========================================================================
 @app.get("/docs", include_in_schema=False)
 async def custom_swagger_ui_html():
-    return get_swagger_ui_html(
+    swagger_html = get_swagger_ui_html(
         openapi_url=app.openapi_url,
         title=app.title + " - Portal",
         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
         swagger_js_url="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js",
         swagger_css_url="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css",
-        swagger_custom_head_html="""
-        <style>
-            body { background-color: #0b0f19 !important; color: #f3f4f6 !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-            .swagger-ui .topbar { background-color: #111827 !important; border-bottom: 2px solid #3b82f6 !important; }
-            .swagger-ui .info .title { color: #f3f4f6 !important; }
-            .swagger-ui .info p, .swagger-ui .info li, .swagger-ui .info td, .swagger-ui .info a { color: #9ca3af !important; }
-            .swagger-ui .opblock { background: #1f2937 !important; border: 1px solid #374151 !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important; border-radius: 8px !important; }
-            .swagger-ui .opblock .opblock-summary-description { color: #d1d5db !important; }
-            .swagger-ui .opblock .opblock-section-header { background: #374151 !important; color: #f3f4f6 !important; }
-            .swagger-ui .tabli button { color: #f3f4f6 !important; }
-            .swagger-ui label { color: #d1d5db !important; }
-            .swagger-ui select { background: #111827 !important; color: #f3f4f6 !important; border: 1px solid #4b5563 !important; }
-            .swagger-ui input[type=text] { background: #111827 !important; color: #f3f4f6 !important; border: 1px solid #4b5563 !important; }
-            .swagger-ui .opblock-description-wrapper p, .swagger-ui .opblock-external-docs-wrapper p, .swagger-ui .opblock-title_normal p { color: #d1d5db !important; }
-            .swagger-ui .response-col_status { color: #f3f4f6 !important; }
-            .swagger-ui table thead tr td, .swagger-ui table thead tr th { color: #f3f4f6 !important; border-bottom: 2px solid #4b5563 !important; }
-            .swagger-ui .response-col_links { color: #9ca3af !important; }
-            .swagger-ui .opblock-body pre.microlight { background: #111827 !important; border: 1px solid #4b5563 !important; color: #e5e7eb !important; border-radius: 6px !important; }
-            .swagger-ui .dialog-ux .modal-ux { background-color: #1f2937 !important; border: 1px solid #374151 !important; }
-            .swagger-ui .dialog-ux .modal-ux-header h3 { color: #f3f4f6 !important; }
-            .swagger-ui .dialog-ux .modal-ux-content p { color: #d1d5db !important; }
-            .swagger-ui .scheme-container { background: #111827 !important; border: 1px solid #374151 !important; box-shadow: none !important; border-radius: 8px !important; }
-            .swagger-ui .btn.authorize { color: #3b82f6 !important; border-color: #3b82f6 !important; background-color: transparent !important; }
-            .swagger-ui .btn.authorize svg { fill: #3b82f6 !important; }
-        </style>
-        """
     )
+    custom_style = """
+    <style>
+        body { background-color: #0b0f19 !important; color: #f3f4f6 !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .swagger-ui .topbar { background-color: #111827 !important; border-bottom: 2px solid #3b82f6 !important; }
+        .swagger-ui .info .title { color: #f3f4f6 !important; }
+        .swagger-ui .info p, .swagger-ui .info li, .swagger-ui .info td, .swagger-ui .info a { color: #9ca3af !important; }
+        .swagger-ui .opblock { background: #1f2937 !important; border: 1px solid #374151 !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important; border-radius: 8px !important; }
+        .swagger-ui .opblock .opblock-summary-description { color: #d1d5db !important; }
+        .swagger-ui .opblock .opblock-section-header { background: #374151 !important; color: #f3f4f6 !important; }
+        .swagger-ui .tabli button { color: #f3f4f6 !important; }
+        .swagger-ui label { color: #d1d5db !important; }
+        .swagger-ui select { background: #111827 !important; color: #f3f4f6 !important; border: 1px solid #4b5563 !important; }
+        .swagger-ui input[type=text] { background: #111827 !important; color: #f3f4f6 !important; border: 1px solid #4b5563 !important; }
+        .swagger-ui .opblock-description-wrapper p, .swagger-ui .opblock-external-docs-wrapper p, .swagger-ui .opblock-title_normal p { color: #d1d5db !important; }
+        .swagger-ui .response-col_status { color: #f3f4f6 !important; }
+        .swagger-ui table thead tr td, .swagger-ui table thead tr th { color: #f3f4f6 !important; border-bottom: 2px solid #4b5563 !important; }
+        .swagger-ui .response-col_links { color: #9ca3af !important; }
+        .swagger-ui .opblock-body pre.microlight { background: #111827 !important; border: 1px solid #4b5563 !important; color: #e5e7eb !important; border-radius: 6px !important; }
+        .swagger-ui .dialog-ux .modal-ux { background-color: #1f2937 !important; border: 1px solid #374151 !important; }
+        .swagger-ui .dialog-ux .modal-ux-header h3 { color: #f3f4f6 !important; }
+        .swagger-ui .dialog-ux .modal-ux-content p { color: #d1d5db !important; }
+        .swagger-ui .scheme-container { background: #111827 !important; border: 1px solid #374151 !important; box-shadow: none !important; border-radius: 8px !important; }
+        .swagger-ui .btn.authorize { color: #3b82f6 !important; border-color: #3b82f6 !important; background-color: transparent !important; }
+        .swagger-ui .btn.authorize svg { fill: #3b82f6 !important; }
+    </style>
+    """
+    body = swagger_html.body.decode("utf-8").replace("</head>", f"{custom_style}</head>")
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(content=body, status_code=swagger_html.status_code, headers=dict(swagger_html.headers))
 
 # =========================================================================
 # Endpoint: GET /security
