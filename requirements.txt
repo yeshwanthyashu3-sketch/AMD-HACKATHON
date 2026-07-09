@@ -1,0 +1,21 @@
+# ── Core API Framework ──────────────────────────────────────────────────────
+fastapi==0.111.0
+uvicorn==0.30.1
+pydantic==2.7.0
+
+# ── Security & Cryptography ─────────────────────────────────────────────────
+cryptography==42.0.8
+
+# ── Report Generation ───────────────────────────────────────────────────────
+reportlab==4.2.2
+
+# ── HTTP Client (GitHub API integration) ────────────────────────────────────
+requests==2.32.3
+
+# ── Testing ─────────────────────────────────────────────────────────────────
+pytest==8.2.2
+pytest-asyncio==0.23.7
+httpx==0.27.0                # Required by FastAPI TestClient
+
+# ── Development Utilities ───────────────────────────────────────────────────
+flake8==7.1.0

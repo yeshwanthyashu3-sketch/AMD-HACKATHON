@@ -1,0 +1,99 @@
+{
+  "info": {
+    "name": "ROCm Navigator - Security & Reporting Gateway Postman Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Run Security Audit",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8000/security",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "security"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Compiled Reports",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8000/reports",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "reports"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Trigger Full Workspace Audit & Report Generation",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8000/audit",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "audit"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get SBOM & Compliance Checklists",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8000/compliance",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "compliance"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Automate Local Git Commit & Simulate GitHub PR",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8000/github/pr",
+          "protocol": "http",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "8000",
+          "path": [
+            "github",
+            "pr"
+          ]
+        }
+      }
+    }
+  ]
+}

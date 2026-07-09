@@ -1,0 +1,243 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ROCm Navigator - Security & Reporting Gateway",
+    "description": "Backend microservice handling security static analysis, secret scanning, AMD TEE key derivation, compliance audits, and GitHub PR automation.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/security": {
+      "get": {
+        "summary": "Run Security Audit",
+        "description": "Runs secret scanners, static memory boundary audits, container compliance scans, and returns safety scores.",
+        "operationId": "get_security_security_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Security Security Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports": {
+      "get": {
+        "summary": "Get Compiled Reports",
+        "description": "Retrieves all generated system audit reports registered in the database.",
+        "operationId": "get_reports_reports_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Get Reports Reports Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audit": {
+      "post": {
+        "summary": "Trigger Full Workspace Audit & Report Generation",
+        "description": "Performs a full security sweep and compiles Markdown, PDF, and JSON reports in a single pipeline pass.",
+        "operationId": "post_audit_audit_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/compliance": {
+      "get": {
+        "summary": "Get SBOM & Compliance Checklists",
+        "description": "Generates the Software Bill of Materials (SBOM) and runs OWASP API compliance checks.",
+        "operationId": "get_compliance_compliance_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/github/pr": {
+      "post": {
+        "summary": "Automate Local Git Commit & Simulate GitHub PR",
+        "description": "Executes subprocess scripts to create branches, commit code, and simulate/create pull requests on GitHub.",
+        "operationId": "post_github_pr_github_pr_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PRRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuditRequest": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id",
+            "default": "session_uuid_7721"
+          }
+        },
+        "type": "object",
+        "title": "AuditRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PRRequest": {
+        "properties": {
+          "owner": {
+            "type": "string",
+            "title": "Owner",
+            "default": "YeshwanthS"
+          },
+          "repo": {
+            "type": "string",
+            "title": "Repo",
+            "default": "rocm-navigator-demo"
+          },
+          "head_branch": {
+            "type": "string",
+            "title": "Head Branch",
+            "default": "migration/rocm-navigator-auto-pr"
+          },
+          "base_branch": {
+            "type": "string",
+            "title": "Base Branch",
+            "default": "develop"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "default": "feat(migration): autonomous CUDA-to-ROCm migration bundle"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body",
+            "default": "This PR was generated autonomously by ROCm Navigator agents after validating code compilation and security safety benchmarks."
+          }
+        },
+        "type": "object",
+        "title": "PRRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

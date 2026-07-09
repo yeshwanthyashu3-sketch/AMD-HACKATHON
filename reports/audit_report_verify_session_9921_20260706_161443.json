@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-07-06T16:14:43.463605",
+  "safety_score": 100,
+  "ratings_breakdown": {
+    "dependencies_rating": "20/20",
+    "secrets_rating": "30/30",
+    "authentication_rating": "20/20",
+    "container_sandbox_rating": "15/15",
+    "static_compliance_rating": "15/15",
+    "total_score": "100/100"
+  },
+  "secrets_findings": [],
+  "vulnerabilities": [],
+  "sbom": {
+    "project_name": "ROCm Navigator",
+    "generated_at": "2026-07-06T16:14:43.463586",
+    "dependencies": [
+      {
+        "name": "fastapi",
+        "version": "0.111.0",
+        "source": "pip",
+        "license": "MIT"
+      },
+      {
+        "name": "uvicorn",
+        "version": "0.30.1",
+        "source": "pip",
+        "license": "BSD-3-Clause"
+      },
+      {
+        "name": "sqlite3",
+        "version": "native",
+        "source": "std_lib",
+        "license": "Public Domain"
+      },
+      {
+        "name": "trufflehog-binary",
+        "version": "3.82.0",
+        "source": "binary",
+        "license": "AGPL-3.0"
+      }
+    ],
+    "license_summary": {
+      "MIT": 1,
+      "GPL (Copyleft Warning)": 1,
+      "Other": 2
+    }
+  }
+}

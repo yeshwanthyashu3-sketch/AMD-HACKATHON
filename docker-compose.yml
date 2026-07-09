@@ -1,0 +1,72 @@
+version: "3.9"
+
+# ============================================================
+# ROCm Navigator — Docker Compose Stack
+# Security & Reporting Microservice (Member 5 — Yashwant)
+# ============================================================
+
+services:
+  # ----------------------------------------------------------
+  # Security & Reporting API Gateway
+  # Serves: FastAPI + Swagger + Dashboard
+  # ----------------------------------------------------------
+  security-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rocm-navigator-security:latest
+    container_name: rocm_security_gateway
+    ports:
+      - "8000:8000"         # FastAPI main port
+    volumes:
+      - ./reports:/app/reports               # persist generated reports
+      - ./shared/database:/app/shared/database   # persist SQLite DB + TEE vault
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NAVIGATOR_ENV=production
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}       # Optional: set for real PR creation
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - rocm-net
+
+  # ----------------------------------------------------------
+  # Test Runner (ephemeral — runs tests then exits)
+  # ----------------------------------------------------------
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rocm-navigator-security:latest
+    container_name: rocm_test_runner
+    entrypoint: ["python", "-m", "pytest", "tests/", "-v", "--tb=short", "--no-header"]
+    volumes:
+      - ./reports:/app/reports
+      - ./shared/database:/app/shared/database
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NAVIGATOR_ENV=test
+    networks:
+      - rocm-net
+    profiles:
+      - test   # Only runs when: docker compose --profile test up
+
+# ============================================================
+# Shared Network
+# ============================================================
+networks:
+  rocm-net:
+    driver: bridge
+    name: rocm_navigator_network
+
+# ============================================================
+# Named Volumes for Persistent Data
+# ============================================================
+volumes:
+  rocm_reports:
+    name: rocm_navigator_reports
