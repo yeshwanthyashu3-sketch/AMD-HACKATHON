@@ -51,6 +51,10 @@ class PRRequest(BaseModel):
 class AuditRequest(BaseModel):
     session_id: str = "session_uuid_7721"
 
+class ScanRequest(BaseModel):
+    code: str
+    filename: str = "main.hip"
+
 # =========================================================================
 # Startup Event: Export API Metadata & Documentation
 # =========================================================================
@@ -151,12 +155,56 @@ async def custom_swagger_ui_html():
     return HTMLResponse(content=body, status_code=swagger_html.status_code, headers=dict(swagger_html.headers))
 
 # =========================================================================
+# Endpoint: POST /api/v1/security/scan
+# =========================================================================
+@app.post("/api/v1/security/scan", summary="Per-file static security scan")
+async def post_security_scan(request: ScanRequest):
+    """Audits already-translated HIP code for out-of-bound memory access patterns."""
+    try:
+        Database.log_step(
+            agent_name="SecurityAgent",
+            step_name="code_static_scan",
+            message=f"Received POST /api/v1/security/scan for file: {request.filename}",
+            status="SUCCESS"
+        )
+        findings = security_agent.scan_code_for_vulnerabilities(request.code, request.filename)
+        return {
+            "status": "SUCCESS",
+            "filename": request.filename,
+            "findings_count": len(findings),
+            "findings": findings
+        }
+    except Exception as e:
+        Database.log_step(
+            agent_name="SecurityAgent",
+            step_name="code_static_scan_failure",
+            message=f"Static code scan failed: {str(e)}",
+            status="FAILED"
+        )
+        raise HTTPException(status_code=500, detail=str(e))
+
+# =========================================================================
 # Endpoint: GET /security
 # =========================================================================
 @app.get("/security", summary="Run Security Audit", response_model=Dict[str, Any])
 async def get_security():
     """Runs secret scanners, static memory boundary audits, container compliance scans, and returns safety scores."""
     try:
+        # Run Trufflehog filesystem scan as the absolute first step in the pipeline
+        trufflehog_findings = security_agent.execute_trufflehog_scan(workspace_root)
+        verified_leaks = [f for f in trufflehog_findings if f.get("verified")]
+        if verified_leaks:
+            Database.log_step(
+                agent_name="SecurityAgent",
+                step_name="trufflehog_halt",
+                message=f"Pipeline halted: Verified secrets detected in repository! Findings: {verified_leaks}",
+                status="FAILED"
+            )
+            raise HTTPException(
+                status_code=403,
+                detail=f"Pipeline halted: Verified secrets detected in repository! Findings: {verified_leaks}"
+            )
+
         Database.log_step(
             agent_name="SecurityAgent",
             step_name="scan_execution",
@@ -174,6 +222,8 @@ async def get_security():
         )
         
         return audit_results
+    except HTTPException as he:
+        raise he
     except Exception as e:
         Database.log_step(
             agent_name="SecurityAgent",
@@ -203,6 +253,21 @@ async def post_audit(request: AuditRequest):
     try:
         session_id = request.session_id
         
+        # Run Trufflehog filesystem scan as the absolute first step in the pipeline
+        trufflehog_findings = security_agent.execute_trufflehog_scan(workspace_root)
+        verified_leaks = [f for f in trufflehog_findings if f.get("verified")]
+        if verified_leaks:
+            Database.log_step(
+                agent_name="SecurityAgent",
+                step_name="trufflehog_halt",
+                message=f"Pipeline halted for session {session_id}: Verified secrets detected in repository! Findings: {verified_leaks}",
+                status="FAILED"
+            )
+            raise HTTPException(
+                status_code=403,
+                detail=f"Pipeline halted: Verified secrets detected in repository! Findings: {verified_leaks}"
+            )
+
         Database.log_step(
             agent_name="SystemGateway",
             step_name="audit_pipeline_init",
@@ -236,6 +301,8 @@ async def post_audit(request: AuditRequest):
                 "container_issues": len(audit_results.get("container_findings", []))
             }
         }
+    except HTTPException as he:
+        raise he
     except Exception as e:
         Database.log_step(
             agent_name="SystemGateway",

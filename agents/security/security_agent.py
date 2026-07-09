@@ -611,6 +611,113 @@ class SecurityAgent:
             "tee_status": tee_status,
         }
 
+    def execute_trufflehog_scan(self, directory_path: str) -> List[Dict[str, Any]]:
+        """Runs a Trufflehog filesystem scan on the specified directory using subprocess."""
+        import subprocess
+        import json
+        import shutil
+
+        # Check if trufflehog is installed
+        if not shutil.which("trufflehog"):
+            print("[!] trufflehog executable not found on system path. Skipping dynamic scan.")
+            return []
+
+        try:
+            # Execute filesystem scan using subprocess
+            cmd = ["trufflehog", "filesystem", directory_path, "--json"]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            # Note: Trufflehog exits with code 183 if leaks are found, so we do not enforce check=True
+            
+            findings = []
+            if result.stdout:
+                for line in result.stdout.strip().splitlines():
+                    if not line.strip():
+                        continue
+                    try:
+                        data = json.loads(line)
+                        detector = data.get("DetectorName") or data.get("detector_name") or "Unknown"
+                        raw = data.get("Raw") or data.get("raw") or ""
+                        verified = data.get("Verified") or data.get("verified") or False
+                        
+                        # Extract filepath from metadata
+                        filepath = ""
+                        source_meta = data.get("SourceMetadata") or {}
+                        data_meta = source_meta.get("Data") or {}
+                        fs_meta = data_meta.get("Filesystem") or {}
+                        filepath = fs_meta.get("file") or fs_meta.get("path") or ""
+                        
+                        if not filepath:
+                            filepath = data.get("file") or data.get("path") or ""
+
+                        findings.append({
+                            "detector": str(detector),
+                            "raw": str(raw),
+                            "verified": bool(verified),
+                            "filepath": str(filepath)
+                        })
+                    except json.JSONDecodeError:
+                        continue
+            return findings
+        except Exception as e:
+            print(f"[!] Trufflehog scan error: {e}")
+            return []
+
+    def scan_code_for_vulnerabilities(self, code: str, filename: str) -> List[Dict[str, Any]]:
+        """Scans raw code string for memory safety vulnerabilities (out-of-bound pointer patterns, thread offsets)."""
+        import re
+        vulnerabilities = []
+        rules = [
+            {
+                "id": "HIP-MEM-001",
+                "name": "Unchecked hipMemcpy Return Code",
+                "pattern": re.compile(r"hipMemcpy\s*\("),
+                "description": "hipMemcpy return value must be checked for hipSuccess.",
+                "severity": "HIGH"
+            },
+            {
+                "id": "HIP-MEM-002",
+                "name": "Unchecked hipMalloc Result",
+                "pattern": re.compile(r"hipMalloc\s*\("),
+                "description": "hipMalloc return must be validated before using the pointer.",
+                "severity": "HIGH"
+            },
+            {
+                "id": "MEM-PTR-001",
+                "name": "Raw Device Pointer Arithmetic",
+                "pattern": re.compile(r"\*\s*\([a-zA-Z0-9_]+\s*[+\-]\s*[0-9a-zA-Z_]+\)"),
+                "description": "Direct pointer arithmetic risks out-of-bound memory access. Prefer array indexing.",
+                "severity": "MEDIUM"
+            },
+            {
+                "id": "HIP-OOB-001",
+                "name": "Out-of-Bound Thread Access Potential",
+                "pattern": re.compile(r"threadIdx\.[xyz]\s*[+\-*\/]\s*[a-zA-Z0-9_]+"),
+                "description": "Unchecked dynamic operations on thread index might lead to out-of-bound memory access.",
+                "severity": "MEDIUM"
+            },
+            {
+                "id": "HIP-OOB-002",
+                "name": "Unsafe Boundary Access",
+                "pattern": re.compile(r"\[\s*(threadIdx|blockIdx)\.[xyz]\s*\]"),
+                "description": "Direct indexing using threadIdx/blockIdx without verifying safety boundaries.",
+                "severity": "LOW"
+            }
+        ]
+
+        lines = code.splitlines()
+        for line_num, line in enumerate(lines, 1):
+            for rule in rules:
+                if rule["pattern"].search(line):
+                    vulnerabilities.append({
+                        "file": filename,
+                        "line": line_num,
+                        "rule_id": rule["id"],
+                        "name": rule["name"],
+                        "description": rule["description"],
+                        "severity": rule["severity"]
+                    })
+        return vulnerabilities
+
 if __name__ == "__main__":
     # Self-test block
     agent = SecurityAgent()
