@@ -2,6 +2,13 @@ import sqlite3
 import os
 from datetime import datetime
 
+# Load environment variables from .env if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "navigator.db")
 
 class Database:
@@ -57,7 +64,7 @@ class Database:
                     file_count INTEGER NOT NULL,
                     secrets_found INTEGER NOT NULL,
                     vulnerabilities_found INTEGER NOT NULL,
-                    safety_score INTEGER NOT NULL
+                    safety_score REAL NOT NULL
                 )
             """)
             
@@ -131,7 +138,7 @@ class Database:
         )
 
     @classmethod
-    def save_security_scan(cls, file_count: int, secrets_found: int, vulnerabilities_found: int, safety_score: int):
+    def save_security_scan(cls, file_count: int, secrets_found: int, vulnerabilities_found: int, safety_score: float):
         """Saves a summary of a security audit run."""
         timestamp = datetime.now().isoformat()
         cls.execute_write(
