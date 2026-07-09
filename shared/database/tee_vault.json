@@ -1,5 +1,5 @@
 {
-  "test_jwt_secret_vault": "gAAAAABqTzpW5zc-VAxv3uNBx_V0DMKEB-nT5KUcV7nl5uHsiXaLILu6iPzXBw-6CqLtl0ENHpj7QkpIPk8iu23DEoeujFLAkAbiWLevvf2-Re3-ShEKGAJXah3QEvCh-_u2noum3R_2",
-  "overwrite_test_key": "gAAAAABqTzpWUITF5ATVBuaV87Fj_DJyhAz5aggbwMgKnoNhZF-JMZByAXpX8v7fkR6e-3ks1-VLT8ZWaqzlDTTV0Weu869Glw==",
-  "persistence_test_key": "gAAAAABqTzQN4r31wQwFvZtrPfxtUrqdfRQ4t8oHY-X1_7s217GGAB6uMxsRiU5buXjr_G9gXrUvYJjMGhKPLaZ86RmCYKo0OUOi1WQXR5itfYnQFHOf1Cc="
+  "test_jwt_secret_vault": "gAAAAABqT02i9qerAVenVzoijwaDXab60a03pl5qT1pnYXb9NkWAyVSpeHHlFytNij4lg6ylgT6cM21IuW54tyX3ZzY-RdLCnX_7m4gtGBTRDbYiN3skXN77Ga1T7e7mZhWOiKVOZ6TV",
+  "overwrite_test_key": "gAAAAABqT02iN931ikBkvp9H-46D7yEakiTaLJYYcbl2bkxM0sSLjgOW-YJfOH0sh3JbNXG6FkLZQpF0J5KBLz23ge__jc3lqw==",
+  "persistence_test_key": "gAAAAABqTzpY5-cg4ID5BYJjOAg2qQ5A5tjPW7f2feirTd0rJ2zM4XpGwl77UHC559iJvkmBuHlfPuJsV_hITiq01s208jrs1vmhDZ867u7Wmt4kES40OBg="
 }

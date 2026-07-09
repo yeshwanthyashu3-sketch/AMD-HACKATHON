@@ -797,6 +797,155 @@ class TestCompliance:
 
 
 # ===========================================================================
+# Test Group 15: Trufflehog filesystem scanning and parsing
+# ===========================================================================
+
+class TestTrufflehogScanning:
+    """Tests for Trufflehog filesystem scanning execution and JSON output parsing."""
+
+    def test_trufflehog_scan_parsing_success(self, security_agent):
+        """Must correctly execute Trufflehog and parse JSON lines output into dicts."""
+        from unittest.mock import patch, MagicMock
+        
+        simulated_output = (
+            '{"DetectorName": "Github", "Raw": "ghp_mocktoken123", "Verified": true, '
+            '"SourceMetadata": {"Data": {"Filesystem": {"file": "src/main.cu"}}}}'
+        )
+        
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = simulated_output
+        mock_result.stderr = ""
+
+        with patch("shutil.which", return_value="/usr/local/bin/trufflehog"), \
+             patch("subprocess.run", return_value=mock_result) as mock_run:
+            
+            findings = security_agent.execute_trufflehog_scan("/tmp/repo")
+            
+            mock_run.assert_called_once_with(["trufflehog", "filesystem", "/tmp/repo", "--json"], capture_output=True, text=True)
+            assert len(findings) == 1
+            assert findings[0]["detector"] == "Github"
+            assert findings[0]["raw"] == "ghp_mocktoken123"
+            assert findings[0]["verified"] is True
+            assert findings[0]["filepath"] == "src/main.cu"
+
+    def test_trufflehog_missing_graceful_fallback(self, security_agent):
+        """If Trufflehog binary is not installed, must return empty findings instead of throwing FileNotFoundError."""
+        from unittest.mock import patch
+        with patch("shutil.which", return_value=None):
+            findings = security_agent.execute_trufflehog_scan("/tmp/repo")
+            assert findings == []
+
+
+# ===========================================================================
+# Test Group 16: Pipeline 403 HALT triggers when verified secrets exist
+# ===========================================================================
+
+class TestPipelineHaltTriggers:
+    """Tests for pipeline execution halting with 403 Forbidden on verified secrets."""
+
+    def test_security_endpoint_halts_on_verified_secret(self, client):
+        """GET /security must return 403 and halt if verified secret is found."""
+        from unittest.mock import patch
+        
+        mock_findings = [
+            {"detector": "Github", "raw": "ghp_123", "verified": True, "filepath": "main.cu"}
+        ]
+        
+        with patch("agents.security.security_agent.SecurityAgent.execute_trufflehog_scan", return_value=mock_findings):
+            response = client.get("/security")
+            assert response.status_code == 403
+            assert "Verified secrets detected" in response.text
+
+    def test_audit_endpoint_halts_on_verified_secret(self, client):
+        """POST /audit must return 403 and halt if verified secret is found."""
+        from unittest.mock import patch
+        
+        mock_findings = [
+            {"detector": "Slack", "raw": "xoxb-123", "verified": True, "filepath": "app.py"}
+        ]
+        
+        with patch("agents.security.security_agent.SecurityAgent.execute_trufflehog_scan", return_value=mock_findings):
+            response = client.post("/audit", json={"session_id": "halt_session_123"})
+            assert response.status_code == 403
+            assert "Verified secrets detected" in response.text
+
+
+# ===========================================================================
+# Test Group 17: POST /api/v1/security/scan endpoint
+# ===========================================================================
+
+class TestStaticScanEndpoint:
+    """Tests for the per-file static scanning API endpoint."""
+
+    def test_scan_endpoint_detects_unsafe_pointer_arithmetic(self, client):
+        """POST /api/v1/security/scan must successfully analyze code and flag unsafe pointer arithmetic."""
+        unsafe_code = """
+        __global__ void test_kernel(float* ptr) {
+            // Unsafe raw pointer arithmetic
+            float val = *(ptr + 10);
+            
+            // Unsafe thread idx boundaries
+            int id = threadIdx.x * 2;
+            
+            // Unchecked malloc
+            hipMalloc(&ptr, 100);
+        }
+        """
+        response = client.post("/api/v1/security/scan", json={
+            "code": unsafe_code,
+            "filename": "test_kernel.hip"
+        })
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "SUCCESS"
+        assert data["filename"] == "test_kernel.hip"
+        assert data["findings_count"] > 0
+        
+        # Verify specific patterns were detected
+        rule_ids = [f["rule_id"] for f in data["findings"]]
+        assert "MEM-PTR-001" in rule_ids or "HIP-OOB-001" in rule_ids or "HIP-MEM-002" in rule_ids
+
+
+# ===========================================================================
+# Test Group 18: PostgreSQL connection toggle and schema creation
+# ===========================================================================
+
+class TestPostgresEngineToggle:
+    """Tests for dynamic SQLite/PostgreSQL schema configuration triggers."""
+
+    def test_postgres_activation_detects_env(self):
+        """Database module must toggle postgres mode dynamically if NEON_DATABASE_URL environment variable is set."""
+        from shared.database.db import Database
+        from unittest.mock import patch
+        
+        with patch.dict("os.environ", {"NEON_DATABASE_URL": "postgresql://user:pass@host/db"}):
+            assert Database.is_postgres() is True
+
+    def test_postgres_init_schema(self):
+        """init_db must successfully compile schema definitions in PostgreSQL mode."""
+        from shared.database.db import Database
+        from unittest.mock import patch, MagicMock
+        
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_conn.cursor.return_value = mock_cursor
+        
+        with patch.dict("os.environ", {"NEON_DATABASE_URL": "postgresql://user:pass@host/db"}), \
+             patch("psycopg2.connect", return_value=mock_conn):
+            
+            Database.init_db()
+            
+            # Assert cursor.execute was called to build tables
+            assert mock_cursor.execute.call_count >= 3
+            executed_queries = [args[0] for args, _ in mock_cursor.execute.call_args_list]
+            
+            # Assert postgres-specific serial primary keys were used instead of SQLite autoincrement
+            assert any("SERIAL PRIMARY KEY" in q for q in executed_queries)
+            assert not any("AUTOINCREMENT" in q for q in executed_queries)
+
+
+# ===========================================================================
 # Main Runner (for running tests directly without pytest CLI)
 # ===========================================================================
 
