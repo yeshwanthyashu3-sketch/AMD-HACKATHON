@@ -173,24 +173,24 @@ class TestDatabase:
 
     def test_save_and_retrieve_security_scan(self):
         """Saving a security scan record and fetching it must round-trip correctly."""
-        # Use a distinctive file_count so we can reliably identify this test's row
+        # Use a distinctive combination so we can reliably identify this test's row
         # even when running against a shared cloud database with pre-existing records
         unique_file_count = 9999
+        unique_secrets = 7777
         Database.save_security_scan(
             file_count=unique_file_count,
-            secrets_found=2,
+            secrets_found=unique_secrets,
             vulnerabilities_found=1,
             safety_score=82.5
         )
-        scans = Database.get_security_scans(limit=50)
+        scans = Database.get_security_scans(limit=100)
         assert isinstance(scans, list)
         assert len(scans) >= 1
 
-        # Find the row we just inserted by its unique file_count
-        matching = [s for s in scans if s["file_count"] == unique_file_count]
-        assert len(matching) >= 1, f"Expected at least 1 scan with file_count={unique_file_count}"
+        # Find the row we just inserted by its unique combination of values
+        matching = [s for s in scans if s["file_count"] == unique_file_count and s["secrets_found"] == unique_secrets]
+        assert len(matching) >= 1, f"Expected at least 1 scan with file_count={unique_file_count} and secrets_found={unique_secrets}"
         latest = matching[0]
-        assert latest["secrets_found"] == 2
         assert latest["safety_score"] == pytest.approx(82.5, abs=0.6)
 
     def test_save_and_retrieve_compiled_report(self, tmp_workspace):
