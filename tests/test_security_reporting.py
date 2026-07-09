@@ -643,20 +643,20 @@ class TestReportBundle:
 # Test Group 12: FastAPI Gateway — Endpoint Integration
 # ===========================================================================
 
+@pytest.fixture(scope="module")
+def client(tmp_workspace):
+    """Creates a FastAPI TestClient for endpoint testing."""
+    try:
+        from fastapi.testclient import TestClient
+        import importlib
+        # Dynamically import the hyphenated module path
+        app_module = importlib.import_module("services.security-audit.app")
+        return TestClient(app_module.app)
+    except Exception as e:
+        pytest.skip(f"FastAPI TestClient not available or import failed: {e}")
+
 class TestFastAPIGateway:
     """Integration tests for the FastAPI security gateway endpoints."""
-
-    @pytest.fixture(scope="class")
-    def client(self, tmp_workspace):
-        """Creates a FastAPI TestClient for endpoint testing."""
-        try:
-            from fastapi.testclient import TestClient
-            import importlib
-            # Dynamically import the hyphenated module path
-            app_module = importlib.import_module("services.security-audit.app")
-            return TestClient(app_module.app)
-        except Exception as e:
-            pytest.skip(f"FastAPI TestClient not available or import failed: {e}")
 
     def test_root_endpoint_returns_html(self, client):
         """GET / must return an HTML response with status 200."""
