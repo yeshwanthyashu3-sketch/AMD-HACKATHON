@@ -1,0 +1,231 @@
+{
+  "timestamp": "2026-07-09T13:14:56.908541",
+  "workspace_path": "C:\\Users\\Yeshwanth S\\OneDrive\\Documents\\PDF X",
+  "safety_score": 68,
+  "ratings_breakdown": {
+    "dependencies_rating": "18/20",
+    "secrets_rating": "0/30",
+    "authentication_rating": "20/20",
+    "container_sandbox_rating": "15/15",
+    "static_compliance_rating": "15/15",
+    "total_score": "68/100"
+  },
+  "secrets_findings": [
+    {
+      "file": ".env",
+      "line": 2,
+      "type": "JWT Token",
+      "scrubbed_value": "eyJh***M1Cs",
+      "severity": "HIGH"
+    },
+    {
+      "file": ".env",
+      "line": 3,
+      "type": "Database Connection String",
+      "scrubbed_value": "post***CH5@",
+      "severity": "HIGH"
+    },
+    {
+      "file": ".github/workflows/security_ci.yml",
+      "line": 340,
+      "type": "High-Entropy String",
+      "scrubbed_value": "'fir***026'",
+      "severity": "HIGH"
+    },
+    {
+      "file": ".github/workflows/security_ci.yml",
+      "line": 378,
+      "type": "High-Entropy String",
+      "scrubbed_value": "\"===***===\"",
+      "severity": "HIGH"
+    },
+    {
+      "file": ".github/workflows/security_ci.yml",
+      "line": 380,
+      "type": "High-Entropy String",
+      "scrubbed_value": "\"===***===\"",
+      "severity": "HIGH"
+    },
+    {
+      "file": ".github/workflows/security_ci.yml",
+      "line": 388,
+      "type": "High-Entropy String",
+      "scrubbed_value": "\"===***===\"",
+      "severity": "HIGH"
+    },
+    {
+      "file": "reports/audit_report_test_session_xyz_20260709_105607.json",
+      "line": 153,
+      "type": "High-Entropy String",
+      "scrubbed_value": "\"aud***607\"",
+      "severity": "HIGH"
+    },
+    {
+      "file": "reports/audit_report_test_session_xyz_20260709_105634.json",
+      "line": 160,
+      "type": "High-Entropy String",
+      "scrubbed_value": "\"aud***634\"",
+      "severity": "HIGH"
+    },
+    {
+      "file": "reports/audit_report_test_session_xyz_20260709_110925.json",
+      "line": 167,
+      "type": "High-Entropy String",
+      "scrubbed_value": "\"aud***925\"",
+      "severity": "HIGH"
+    },
+    {
+      "file": "reports/audit_report_test_session_xyz_20260709_113615.json",
+      "line": 174,
+      "type": "High-Entropy String",
+      "scrubbed_value": "\"aud***615\"",
+      "severity": "HIGH"
+    },
+    {
+      "file": "reports/audit_report_test_session_xyz_20260709_125835.json",
+      "line": 195,
+      "type": "High-Entropy String",
+      "scrubbed_value": "\"aud***835\"",
+      "severity": "HIGH"
+    },
+    {
+      "file": "reports/audit_report_test_session_xyz_20260709_125847.json",
+      "line": 202,
+      "type": "High-Entropy String",
+      "scrubbed_value": "\"aud***847\"",
+      "severity": "HIGH"
+    },
+    {
+      "file": "reports/audit_report_test_session_xyz_20260709_131335.json",
+      "line": 223,
+      "type": "High-Entropy String",
+      "scrubbed_value": "\"aud***335\"",
+      "severity": "HIGH"
+    },
+    {
+      "file": "tests/test_security_reporting.py",
+      "line": 64,
+      "type": "OpenAI API Key",
+      "scrubbed_value": "sk-a***z111",
+      "severity": "CRITICAL"
+    },
+    {
+      "file": "tests/test_security_reporting.py",
+      "line": 64,
+      "type": "Generic Token/Key",
+      "scrubbed_value": "API_***111\"",
+      "severity": "HIGH"
+    },
+    {
+      "file": "tests/test_security_reporting.py",
+      "line": 65,
+      "type": "AWS Access Key ID",
+      "scrubbed_value": "AKIA***1234",
+      "severity": "CRITICAL"
+    },
+    {
+      "file": "tests/test_security_reporting.py",
+      "line": 246,
+      "type": "High-Entropy String",
+      "scrubbed_value": "\"sk-***ear\"",
+      "severity": "HIGH"
+    },
+    {
+      "file": "tests/test_security_reporting.py",
+      "line": 925,
+      "type": "Database Connection String",
+      "scrubbed_value": "post***ass@",
+      "severity": "HIGH"
+    },
+    {
+      "file": "tests/test_security_reporting.py",
+      "line": 937,
+      "type": "Database Connection String",
+      "scrubbed_value": "post***ass@",
+      "severity": "HIGH"
+    }
+  ],
+  "vulnerabilities": [],
+  "container_findings": [],
+  "sbom": {
+    "project_name": "ROCm Navigator",
+    "generated_at": "2026-07-09T13:14:56.908446",
+    "dependencies": [
+      {
+        "name": "fastapi",
+        "version": "0.111.0",
+        "source": "pip",
+        "license": "MIT"
+      },
+      {
+        "name": "uvicorn",
+        "version": "0.30.1",
+        "source": "pip",
+        "license": "MIT / Apache-2.0"
+      },
+      {
+        "name": "pydantic",
+        "version": "2.7.0",
+        "source": "pip",
+        "license": "MIT / Apache-2.0"
+      },
+      {
+        "name": "cryptography",
+        "version": "42.0.8",
+        "source": "pip",
+        "license": "MIT / Apache-2.0"
+      },
+      {
+        "name": "reportlab",
+        "version": "4.2.2",
+        "source": "pip",
+        "license": "BSD"
+      },
+      {
+        "name": "requests",
+        "version": "2.32.3",
+        "source": "pip",
+        "license": "MIT / Apache-2.0"
+      },
+      {
+        "name": "pytest",
+        "version": "8.2.2",
+        "source": "pip",
+        "license": "MIT / Apache-2.0"
+      },
+      {
+        "name": "pytest-asyncio",
+        "version": "0.23.7",
+        "source": "pip",
+        "license": "MIT / Apache-2.0"
+      },
+      {
+        "name": "httpx",
+        "version": "0.27.0                # Required by FastAPI TestClient",
+        "source": "pip",
+        "license": "MIT / Apache-2.0"
+      },
+      {
+        "name": "flake8",
+        "version": "7.1.0",
+        "source": "pip",
+        "license": "MIT / Apache-2.0"
+      }
+    ],
+    "license_summary": {
+      "MIT": 9,
+      "GPL (Copyleft Warning)": 0,
+      "Other": 1
+    }
+  },
+  "tee_status": {
+    "encryption_mode": "AES-256-CBC (Fernet/PBKDF2)",
+    "vault_path": "C:\\Users\\Yeshwanth S\\OneDrive\\Documents\\PDF X\\shared\\database\\tee_vault.json",
+    "entries_count": 3,
+    "cryptography_available": true,
+    "key_derivation": "PBKDF2-HMAC-SHA256 (100,000 iterations)",
+    "status": "OPERATIONAL"
+  },
+  "session_id": "test_session_xyz",
+  "report_id": "audit_report_test_session_xyz_20260709_131505"
+}
